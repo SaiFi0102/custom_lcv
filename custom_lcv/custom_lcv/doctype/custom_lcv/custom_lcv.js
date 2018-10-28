@@ -25,10 +25,21 @@ custom_lcv.custom_lcv.CustomLCV = erpnext.stock.StockController.extend({
 				}
 			};
 
+		this.frm.set_query("expense_account", function(doc) {
+			var account_type = ["Tax", "Chargeable", "Expenses Included In Valuation"];
+			return {
+				query: "erpnext.controllers.queries.tax_account_query",
+				filters: {
+					"account_type": account_type,
+					"company": doc.company
+				}
+			}
+		});
+
 		this.frm.add_fetch("receipt_document", "supplier", "supplier");
 		this.frm.add_fetch("receipt_document", "posting_date", "posting_date");
 		this.frm.add_fetch("receipt_document", "base_grand_total", "grand_total");
-
+		this.frm.add_fetch("company", "expenses_included_in_valuation", "expense_account");
 	},
 
 	refresh: function(frm) {

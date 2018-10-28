@@ -9,6 +9,7 @@ from frappe.utils import flt
 from frappe.model.meta import get_field_precision
 from frappe.model.document import Document
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
+from erpnext.accounts.party import get_party_account
 
 class CustomLCV(Document):
 	def get_items_from_purchase_receipts(self):
@@ -94,9 +95,30 @@ class CustomLCV(Document):
 
 	def on_submit(self):
 		self.update_landed_cost()
+		self.make_payable_jv()
 
 	def on_cancel(self):
 		self.update_landed_cost()
+
+	def make_payable_jv(self):
+		jv = frappe.new_doc("Journal Entry")
+		jv.linked_custom_lcv = self.name
+		jv.company = self.company
+		jv.posting_date = frappe.utils.nowdate()
+		jv.append("accounts", {
+			"account": self.expense_account,
+			"debit": flt(self.total_taxes_and_charges),
+			"debit_in_account_currency": flt(self.total_taxes_and_charges),
+		})
+		jv.append("accounts", {
+			"account": get_party_account("Supplier", self.supplier, self.company),
+			"party_type": "Supplier",
+			"party": self.supplier,
+			"credit": flt(self.total_taxes_and_charges),
+			"credit_in_account_currency": flt(self.total_taxes_and_charges),
+		})
+		jv.insert()
+		jv.submit()
 
 	def update_landed_cost(self):
 		for d in self.get("purchase_receipts"):
