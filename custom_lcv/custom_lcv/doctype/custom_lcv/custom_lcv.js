@@ -53,7 +53,7 @@ custom_lcv.custom_lcv.CustomLCV = erpnext.stock.StockController.extend({
 					</h4>
 					<ul>
 						<li>
-							${__("Charges will be distributed proportionately based on item qty or amount, as per your selection")}
+							${__("Charges will be distributed proportionately based on item qty, amount or weight, as per your selection")}
 						</li>
 						<li>
 							${__("Remove item if charges is not applicable to that item")}
@@ -86,6 +86,13 @@ custom_lcv.custom_lcv.CustomLCV = erpnext.stock.StockController.extend({
 					me.set_applicable_charges_for_item();
 				}
 			});
+		}
+	},
+
+	receipt_document: function(doc, cdt, cdn) {
+		if (!this.frm.doc.supplier) {
+			var d = locals[cdt][cdn];
+			this.frm.set_value("supplier", d.supplier);
 		}
 	},
 

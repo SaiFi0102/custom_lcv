@@ -18,7 +18,7 @@ class CustomLCV(Document):
 			if pr.receipt_document_type and pr.receipt_document:
 				pr_items = frappe.db.sql("""
 					select item.item_code, item.description,
-						item.qty, item.total_weight, item.base_rate, item.base_amount, item.name, item.cost_center
+						item.qty, item.total_weight, item.weight_uom, item.base_rate, item.base_amount, item.name, item.cost_center
 					from `tab{doctype} Item` item where parent = %s
 					and exists(select name from tabItem where name = item.item_code and is_stock_item = 1)
 					""".format(doctype=pr.receipt_document_type), pr.receipt_document, as_dict=True)
@@ -29,6 +29,7 @@ class CustomLCV(Document):
 					item.description = d.description
 					item.qty = d.qty
 					item.weight = d.total_weight
+					item.weight_uom = d.weight_uom
 					item.rate = d.base_rate
 					item.cost_center = d.cost_center or erpnext.get_default_cost_center(self.company)
 					item.amount = d.base_amount
@@ -44,6 +45,15 @@ class CustomLCV(Document):
 			self.get_items_from_purchase_receipts()
 		else:
 			self.validate_applicable_charges_for_item()
+		self.validate_weight_uoms()
+
+	def validate_weight_uoms(self):
+		if self.distribute_charges_based_on == "Weight":
+			weight_uoms = set()
+			for item in self.items:
+				weight_uoms.add(item.weight_uom)
+			if len(weight_uoms) > 1:
+				frappe.throw(_("Weight UOMs of all items must be the same"))
 
 	def check_mandatory(self):
 		if not self.get("purchase_receipts"):

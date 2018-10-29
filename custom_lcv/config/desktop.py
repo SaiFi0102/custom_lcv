@@ -5,10 +5,11 @@ from frappe import _
 def get_data():
 	return [
 		{
+			"_doctype": "Custom LCV",
 			"module_name": "Custom LCV",
-			"color": "grey",
+			"color": "#f39c12",
 			"icon": "octicon octicon-package",
-			"type": "module",
-			"label": _("Custom LCV")
-		}
+			"type": "link",
+			"link": "List/Custom LCV"
+		},
 	]

@@ -7,7 +7,7 @@ app_title = "Custom LCV"
 app_publisher = "Saif Ur Rehman"
 app_description = "Custom LCV Document for ERPNext V10 with additional functionality such as distribution by weight and automatic Journal Entry creation"
 app_icon = "octicon octicon-package"
-app_color = "grey"
+app_color = "yellow"
 app_email = "saifi0102@gmail.com"
 app_license = "MIT"
 
