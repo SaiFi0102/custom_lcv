@@ -58,7 +58,7 @@ class CustomLCV(Document):
 		if self.distribute_charges_based_on == "Weight":
 			weight_uoms = set()
 			for item in self.items:
-				weight_uoms.add(item.weight_uom)
+				weight_uoms.add(str(item.weight_uom))
 			if len(weight_uoms) > 1:
 				frappe.throw(_("Weight UOMs of all items must be the same. UOMs: {0}").format(", ".join(weight_uoms)))
 
