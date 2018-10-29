@@ -83,6 +83,7 @@ custom_lcv.custom_lcv.CustomLCV = erpnext.stock.StockController.extend({
 				doc: me.frm.doc,
 				method: "get_items_from_purchase_receipts",
 				callback: function(r, rt) {
+					me.refresh_field("items");
 					me.set_applicable_charges_for_item();
 				}
 			});

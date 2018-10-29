@@ -14,6 +14,8 @@ from erpnext.accounts.party import get_party_account
 class CustomLCV(Document):
 	def get_items_from_purchase_receipts(self):
 		self.set("items", [])
+		self.total_amount = 0
+		self.total_weight = 0
 		for pr in self.get("purchase_receipts"):
 			if pr.receipt_document_type and pr.receipt_document:
 				pr_items = frappe.db.sql("""
@@ -28,14 +30,19 @@ class CustomLCV(Document):
 					item.item_code = d.item_code
 					item.description = d.description
 					item.qty = d.qty
-					item.weight = d.total_weight
-					item.weight_uom = d.weight_uom
 					item.rate = d.base_rate
 					item.cost_center = d.cost_center or erpnext.get_default_cost_center(self.company)
 					item.amount = d.base_amount
 					item.receipt_document_type = pr.receipt_document_type
 					item.receipt_document = pr.receipt_document
 					item.purchase_receipt_item = d.name
+
+					item_master = frappe.db.get_value("Item", item.item_code, ["weight_uom", "weight_per_unit"], as_dict=1)
+					item.weight = flt(item_master.weight_per_unit * d.qty, item.precision("weight"))
+					item.weight_uom = item_master.weight_uom
+
+					self.total_amount += item.amount
+					self.total_weight += item.weight
 
 	def validate(self):
 		self.check_mandatory()
@@ -53,7 +60,7 @@ class CustomLCV(Document):
 			for item in self.items:
 				weight_uoms.add(item.weight_uom)
 			if len(weight_uoms) > 1:
-				frappe.throw(_("Weight UOMs of all items must be the same"))
+				frappe.throw(_("Weight UOMs of all items must be the same. UOMs: {0}").format(", ".join(weight_uoms)))
 
 	def check_mandatory(self):
 		if not self.get("purchase_receipts"):
